@@ -7,57 +7,95 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
-// An object that represents the three stacks of Towers of Hanoi; 
-  // * each key is an array of Numbers: 
-    // * A is the far-left, 
-    // * B is the middle, 
-    // * C is the far-right stack
-      // * Each number represents the largest to smallest tokens: 
-        // * 4 is the largest, 
-        // * 1 is the smallest
 
 let stacks = {
   a: [4, 3, 2, 1],
   b: [],
   c: []
-};
+}; 
 
-// Start here. What is this function doing?
 const printStacks = () => {
   console.log("a: " + stacks.a);
   console.log("b: " + stacks.b);
   console.log("c: " + stacks.c);
 }
 
-// Next, what do you think this function should do?
-const movePiece = () => {
-  // Your code here
+let from = '';
+let to = '';
 
+// this function should update the board (stacks)
+// So that the top disc from the "from" stack is removed
+// and added to the "to" stack
+// this function should assume that the move is legal and has already been checked
+// @param {*} from - the variable holding the name of the stack to "pop" from 
+// @param {*} to - the variable holding the name of the stack to "push" to
+const movePiece = (from, to) => {
+  // remove the top disc from the 'from' stack
+  const disc = stacks[from].pop();
+
+  // Add the removed disc to the 'to' stack
+  stacks[to].push(disc);
 }
 
-// Before you move, should you check if the move it actually allowed? Should 3 be able to be stacked on 2
+// this function should check if the proposed move is legal and valid
+// it should not change the state of the board (ie it should not actually make the move)
+// if the move is legal and valid, return true
+// otherwise return false
+// @param {*} from - the variable holding the name of the stack to "pop" from
+// @param {*} to - the variable holding the name of the stack to "push" to
 const isLegal = () => {
-  // Your code here
+  // Check if the 'from' stack is empty
+  if (stacks[from].length == 0) {
+    return false;
+  }
+
+  // Get the top disc from the 'from' stack
+  const fromTop = stacks[from][stacks[from].length - 1];
+
+  // Get the top disc from the 'to' stack (if not empty)
+  const toTop = stacks[to][stacks[to].length - 1];
+
+  // check if 'to' stack is empty or if the move is valid
+  return stacks[to].length == 0 || fromTop < toTop;
 
 }
 
-// What is a win in Towers of Hanoi? When should this function run?
+// this function should check if the board is in a winning state.
+// A winning state is when all the discs are on stack b, or stack c.
+// return true if the board is in a winning state,
+// otherwise return false
 const checkForWin = () => {
-  // Your code here
+  // Check if all discs are on stack 'b' or 'c'
+  return (stacks.b.length == 4 || stacks.c.length == 4);
 
 }
 
 // When is this function called? What should it do with its argument?
-const towersOfHanoi = (startStack, endStack) => {
-  // Your code here
+const towersOfHanoi = (from, to) => {
+  // Check if the move is legal
+  if (isLegal(from, to)) {
+    movePiece(from, to);
 
-}
+    // Check if the player has won
+    if (checkForWin()) {
+      // Print the final state of the stacks
+      printStacks();
+      console.log("Congratulations, You Won!");
+      process.exit(0); // to exit program
+    }
+  } else {
+    // if the move is not legal, print an error message
+    console.log("Invalid move. Please try again.");
+  }
+};
 
 const getPrompt = () => {
   printStacks();
-  rl.question('start stack: ', (startStack) => {
-    rl.question('end stack: ', (endStack) => {
-      towersOfHanoi(startStack, endStack);
+  rl.question('start stack: ', (fromInput) => {
+    rl.question('end stack: ', (toInput) => {
+      from = fromInput;
+      to = toInput;
+      towersOfHanoi(from, to);
       getPrompt();
     });
   });
