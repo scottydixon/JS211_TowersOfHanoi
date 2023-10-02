@@ -7,6 +7,8 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
+// Add a variable to count moves
+let moveCount = 0;
 
 let stacks = {
   a: [4, 3, 2, 1],
@@ -23,12 +25,7 @@ const printStacks = () => {
 let from = '';
 let to = '';
 
-// this function should update the board (stacks)
-// So that the top disc from the "from" stack is removed
-// and added to the "to" stack
-// this function should assume that the move is legal and has already been checked
-// @param {*} from - the variable holding the name of the stack to "pop" from 
-// @param {*} to - the variable holding the name of the stack to "push" to
+
 const movePiece = (from, to) => {
   // remove the top disc from the 'from' stack
   const disc = stacks[from].pop();
@@ -37,14 +34,12 @@ const movePiece = (from, to) => {
   stacks[to].push(disc);
 }
 
-// this function should check if the proposed move is legal and valid
-// it should not change the state of the board (ie it should not actually make the move)
-// if the move is legal and valid, return true
-// otherwise return false
-// @param {*} from - the variable holding the name of the stack to "pop" from
-// @param {*} to - the variable holding the name of the stack to "push" to
-const isLegal = () => {
-  // Check if the 'from' stack is empty
+
+const isLegal = (from, to) => {
+  if(!['a','b','c'].includes(from) || !['a','b','c'].includes(to)) {
+    return false; // Invalid stack names
+  }
+
   if (stacks[from].length == 0) {
     return false;
   }
@@ -75,12 +70,13 @@ const towersOfHanoi = (from, to) => {
   // Check if the move is legal
   if (isLegal(from, to)) {
     movePiece(from, to);
-
+    moveCount++;
+    console.log(`Move #${moveCount}`)
     // Check if the player has won
     if (checkForWin()) {
       // Print the final state of the stacks
       printStacks();
-      console.log("Congratulations, You Won!");
+      console.log(`Congratulations, You Won in ${moveCount} moves!`);
       process.exit(0); // to exit program
     }
   } else {
@@ -142,5 +138,54 @@ if (typeof describe === 'function') {
 } else {
 
   getPrompt();
+
+}
+
+// My unit tests
+
+if (typeof describe === 'function') {
+
+
+  describe('#towersOfHanoi()', () => {
+    it('should not allow an invalid move from an empty stack', () => {
+      moveCount = 0;
+      stacks = {
+        a: [],
+        b: [],
+        c: [4, 3, 2, 1]
+      };
+      towersOfHanoi('a', 'b');
+      assert.deepEqual(stacks, { a: [], b: [], c: [4, 3, 2, 1] }); // Stacks should remain unchanged
+      assert.equal(moveCount, 0); // No moves should be counted
+    });
+
+    it('should not allow an illegal move to a non-empty stack', () => {
+      moveCount = 0;
+      stacks = {
+        a: [4, 3, 2],
+        b: [1],
+        c: []
+      };
+      towersOfHanoi('a', 'b');
+      assert.deepEqual(stacks, { a: [4, 3, 2], b: [1], c: [] }); // Stacks should remain unchanged
+      assert.equal(moveCount, 0); // No moves should be counted
+    });
+    
+
+    it('should not allow moves from/to invalid stack names', () => {
+      moveCount = 0;
+      stacks = {
+        a: [4, 3, 2, 1],
+        b: [],
+        c: []
+      };
+      towersOfHanoi('d', 'a'); // Invalid 'from' stack
+      assert.deepEqual(stacks, { a: [4, 3, 2, 1], b: [], c: [] }); // Stacks should remain unchanged
+      assert.equal(moveCount, 0); // No moves should be counted
+      towersOfHanoi('a', 'x'); // Invalid 'to' stack
+      assert.deepEqual(stacks, { a: [4, 3, 2, 1], b: [], c: [] }); // Stacks should remain unchanged
+      assert.equal(moveCount, 0); // No moves should be counted
+    });
+  });
 
 }
